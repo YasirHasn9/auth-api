@@ -24,8 +24,18 @@ router.post("/register", async (req, res, next) => {
 });
 
 router.post("/login", async (req, res, next) => {
+  try {
+    let { username, password } = req.body;
+    const [user] = await Users.findBy({ username });
+    if (user && bcrypt.compareSync(password, user.password)) {
+      return res.json({ message: `welcome ${user.username}` });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
 
-
+router.post("/login", async (req, res, next) => {
   try {
     let { username, password } = req.body;
     const [user] = await Users.findBy({ username });
