@@ -1,38 +1,41 @@
-// this router is gonna manage all the authentication on http requests
-// to make our password  hashed we are gonna use the bcryptjs
+// since we are trying to make our password hard to guess , we are gonna use a hashed generator library
+// called bcryptjs and its gonna be be managed the authentication on http request
 const bcrypt = require("bcryptjs");
+const Users = require("../users/users-model");
+// make our router
 const router = require("express").Router();
 
-const Users = require("../users/users-model.js");
-
-// since this the interacts of the client with the database
-// so we are gonna use the post to get authenticated to be
-// authorized
-
-// authentication is who you are
-// authorization is what can you do
+// first make an account for the client through post
 router.post("/register", async (req, res, next) => {
   try {
+    // this is the info for the client to make his/her account
     let user = req.body;
-    // hash is gonna be synchronous which means this
-    // code will stop here until is finished
-    const hash = bcrypt.hashSync(user.password, 8);
 
+    // hashed the password and later send back to the database as a hashed password
+    let hash = bcrypt.hashSync(user.password, 15); // the hash function is a sync function
+    // so the function will stop here till it finishes
     user.password = hash;
-    const saved = await Users.add(user); // if we send the user to the database
-    // it means we are gonna send the user.password this is why we have to send the hashed
-    // password instead of the real user.password user.password = hash
-    if (saved) {
-      res.json(saved);
+
+    const createdUser = await Users.add(user);
+    res.json(createdUser);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/login", async (req, res, next) => {
+
+
+  try {
+    let { username, password } = req.body;
+    const [user] = await Users.findBy({ username });
+    if (user && bcrypt.compareSync(password, user.password)) {
+      return res.json({ message: `welcome ${user.username}` });
     }
   } catch (err) {
     next(err);
   }
-  Users.find()
-    .then(users => {
-      res.json(users);
-    })
-    .catch(err => res.send(err));
 });
 
+// export the router
 module.exports = router;
