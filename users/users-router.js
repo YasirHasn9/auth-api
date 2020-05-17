@@ -1,8 +1,9 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs"); // this is gonna generate a hashed password
 const Users = require("./users-model.js");
+const restrictedMiddleware = require("../auth/restrictedMiddleware");
 
-router.get("/", (req, res) => {
+router.get("/", restrictedMiddleware, (req, res) => {
   Users.find()
     .then(users => {
       res.json(users);
