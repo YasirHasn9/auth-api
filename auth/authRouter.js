@@ -21,16 +21,32 @@ router.post("/login", (req, res) => {
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
         //   after our library configured correctly and hashed in the password in db
-        // we can set anything on our session 
-        req.session.user = user // we are telling the lib that we are saving the 
-        // information about this user in the session go head save that and send the cookie 
+        // we can set anything on our session
+        req.session.user = user; // we are telling the lib that we are saving the
+        // information about this user in the session go head save that and send the cookie
         // with that user info
         res.status(200).json({ message: `Welcome ${user.username}` });
       } else {
-          res.status(401).json({message: "Invalid credentials"})
+        res.status(401).json({ message: "Invalid credentials" });
       }
-    }).catch(err =>{
-        res.status(500).json(err)
     })
+    .catch(err => {
+      res.status(500).json(err);
+    });
+});
+
+// we need to send request to the db telling it to destroy our session
+router.get("/logout", (req, res) => {
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        res.json({ message: "You cant leave" });
+      } else {
+        res.status(200).json({ message: "Bye!" });
+      }
+    });
+  } else {
+    res.status(200).json({ message: "You were not here before" });
+  }
 });
 module.exports = router;
